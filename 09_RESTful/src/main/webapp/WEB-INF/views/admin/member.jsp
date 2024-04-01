@@ -13,6 +13,7 @@
 
   <div>
     <h1>회원관리</h1>
+    <input type="hidden" id="member-no">
     <div>
       <label for="email">이메일</label>
       <input type="text" id="email">
@@ -92,7 +93,14 @@
     
     <div>
       <div id="total"></div>
-      <div><select id="display"><option>20</option><option>50</option><option>100</option></select></div>
+      <div>
+        <button type="button" id="btn-select-remove">선택삭제</button>
+        <select id="display">
+          <option>20</option>
+          <option>50</option>
+          <option>100</option>
+        </select>
+      </div>
       <table border="1">
         <thead>
           <tr>
@@ -110,23 +118,11 @@
           </tr>
         </tfoot>
       </table>
-      <button type="button" id="btn-select-remove">선택삭제</button>
     </div>
     
   </div>
   
   <script src="${contextPath}/resources/js/member.js?dt=<%=System.currentTimeMillis()%>"></script>
-  <script>
-  
-// jQuery 객체 선언
-
-  
-// 함수 표현식 (함수 만들기)
-
-
-// 함수 호출 및 이벤트
-
-  </script>
 
 </body>
 </html>

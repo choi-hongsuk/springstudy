@@ -1,6 +1,7 @@
 /*************************************************
  * 파일명 : member.js
  * 설  명 : 회원 관리 JavaScript
+ *
  * 수정일      수정자  Version   Function 명
  * -------------------------------------------
  * 2024.03.25  민경태  1.0       fnInit
@@ -13,6 +14,7 @@ var vPage = 1;
 var vDisplay = 20;
 
 // jQuery 객체 선언 (jqXXX)
+var jqMemberNo = $('#member-no');
 var jqMembers = $('#members');
 var jqTotal = $('#total');
 var jqPaging = $('#paging');
@@ -36,18 +38,22 @@ var jqBtnSelectRemove = $('#btn-select-remove');
  * 사용법 : fnInit()
  * 작성일 : 2024.03.26
  * 작성자 : 이런저런 개발팀 민경태
+ *
  * 수정일     수정자  수정내용
  * --------------------------------
  * 2024.03.25 민경태  입력란 초기화
  *************************************************/
 const fnInit = ()=>{
-  jqEmail.val('');
+  jqEmail.val('').prop('disabled', false);
   jqName.val('');
   $('#none').prop('checked', true);
   jqZonecode.val('');
   jqAddress.val('');
   jqDetailAddress.val('');
   jqExtraAddress.val('');
+  jqBtnRegister.prop('disabled', false);
+  jqBtnModify.prop('disabled', true);
+  jqBtnRemove.prop('disabled', true);
 }
 
 const fnGetContextPath = ()=>{
@@ -169,9 +175,13 @@ const fnGetMemberByNo = (evt)=>{
                       */
     fnInit();
     if(resData.member !== null){
-      jqEmail.val(resData.member.email);
+      jqEmail.val(resData.member.email).prop('disabled', true);
       jqName.val(resData.member.name);
       $(':radio[value=' + resData.member.gender + ']').prop('checked', true);
+      jqBtnRegister.prop('disabled', true);
+      jqBtnModify.prop('disabled', false);
+      jqBtnRemove.prop('disabled', false);
+      jqMemberNo.val(resData.member.memberNo);
     }
     if(resData.addressList.length !== 0){
       jqZonecode.val(resData.addressList[0].zonecode);
@@ -184,6 +194,95 @@ const fnGetMemberByNo = (evt)=>{
   })
 }
 
+const fnModifyMember = ()=>{
+  $.ajax({
+    type: 'PUT',
+    url: fnGetContextPath() + '/members',
+    contentType: 'application/json',
+    data: JSON.stringify({
+      'memberNo': jqMemberNo.val(),
+      'name': jqName.val(),
+      'gender': $(':radio:checked').val(),
+      'zonecode': jqZonecode.val(),
+      'address': jqAddress.val(),
+      'detailAddress': jqDetailAddress.val(),
+      'extraAddress': jqExtraAddress.val()
+    }),
+    dataType: 'json',
+    success: (resData)=>{ //resData = {"updateCount": 2}
+      if(resData.updateCount === 2){
+        alert('회원 정보가 수정되었습니다.');
+        fnGetMemberList();
+      } else {
+        alert('회원 정보가 수정되지 않았습니다.');
+      }
+    },
+    error: (jqXHR)=>{
+      alert(jqXHR.statusText + '(' + jqXHR.status + ')');
+    }
+  })
+}
+
+const fnRemoveMember = ()=>{
+  if(!confirm('삭제할까요?')){
+    return;
+  } 
+  $.ajax({
+    type: 'DELETE', 
+    url: fnGetContextPath() + '/member/' + jqMemberNo.val(),
+    dataType: 'json'
+  }).done(resData=>{  // {"deleteCount": 1}
+    if(resData.deleteCount === 1){
+      alert('회원 정보가 삭제되었습니다.');
+      fnInit();
+      vPage = 1;
+      fnGetMemberList();
+    } else {
+      alert('회원 정보가 삭제되지 않았습니다.');
+    }
+  }).fail(jqXHR=>{
+    alert(jqXHR.statusText + '(' + jqXHR.status + ')');
+  })
+}
+
+const fnRemoveMembers = ()=> {
+  // 체크된 요소를 배열에 저장하기
+  let arr = [];
+  $.each($('.chk-member'), (i, chk)=>{
+    if($(chk).is(':checked')){
+      arr.push(chk.value);
+    }
+  })
+  // 체크된 요소가 없으면 함수 종료
+  if(arr.length === 0) {
+    alert('선택된 회원 정보가 없습니다.');
+    return;
+  }
+  // 삭제 확인
+  if(!confirm('선택된 회원 정보를 모두 삭제할까요?')){
+    return;
+  }
+  // 삭제
+   $.ajax({
+     type: 'DELETE',
+     url: fnGetContextPath() + '/members/' + arr.join(','),
+     dataType: 'json',
+     success: (resData)=>{ // {"deleteCount": 3}
+       if(resData.deleteCount === arr.length) {
+         alert('선택된 회원 정보가 삭제되었습니다.');
+         vPage = 1;
+         fnGetMemberList();
+       } else {
+         alert('선택된 회원 정보가 삭제되지 않았습니다.');
+       }
+     },
+     error: (jqXHR)=>{
+       alert(jqXHR.statusText + '(' + jqXHR.status + ')');
+     }
+   }) 
+}
+
+
 // 함수 호출 및 이벤트
 fnInit();
 jqBtnInit.on('click', fnInit);
@@ -191,3 +290,6 @@ jqBtnRegister.on('click', fnRegisterMember);
 fnGetMemberList();
 jqDisplay.on('change', fnChangeDisplay);
 $(document).on('click', '.btn-detail', (evt)=>{ fnGetMemberByNo(evt); });
+jqBtnModify.on('click', fnModifyMember);
+jqBtnRemove.on('click', fnRemoveMember);
+jqBtnSelectRemove.on('click', fnRemoveMembers);
