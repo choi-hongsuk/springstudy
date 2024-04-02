@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,9 +18,9 @@ import com.gdu.myapp.service.UserService;
 @RequestMapping("/user")
 @Controller
 public class UserController {
-  
+
   private final UserService userService;
-  
+
   public UserController(UserService userService) {
     super();
     this.userService = userService;
@@ -31,29 +30,14 @@ public class UserController {
   public String signinPage(HttpServletRequest request
                          , Model model) {
     
-    // Sign In 페이지 이전의 주소가 저장되어 있는 Request Header 의 referer
-    String referer = request.getHeader("referer");
+    // Sign In 페이지로 url 넘겨 주기 (로그인 후 이동할 경로를 의미함)
+    model.addAttribute("url",  userService.getRedirectURLAfterSignin(request));
     
-    // referer 로 돌아가면 안 되는 예외 상황 (아이디/비밀번호 찾기 화면, 회원가입 화면)
-    String[] excludeUrls = {"/findId.page", "/findPw.page", "/signup.page"};
-    
-    // Sign In 이후 이동할 url
-    String url = referer;
-    if(referer != null) {
-      for(String excludeUrl : excludeUrls) {
-        if(referer.contains(excludeUrl)) {
-          url = request.getContextPath() + "/main.page";
-          break;
-        }
-      }
-    } else {
-      url = request.getContextPath() + "/main.page";
-    }
-    
-    // Sign In 페이지로 url 넘겨 주기
-    model.addAttribute("url", url);
+    // Sign In 페이지로 naverLoginURL 넘겨 주기 (네이버 로그인 요청 주소를 의미함)
+    model.addAttribute("naverLoginURL", userService.getNaverLoginURL(request));
     
     return "user/signin";
+    
   }
   
   @PostMapping("/signin.do")
@@ -73,7 +57,36 @@ public class UserController {
   
   @PostMapping(value="/sendCode.do", produces="application/json")
   public ResponseEntity<Map<String, Object>> sendCode(@RequestBody Map<String, Object> params) {
-    System.out.println(params);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return userService.sendCode(params);
   }
+  
+  @PostMapping("/signup.do")
+  public void signup(HttpServletRequest request, HttpServletResponse response) {
+    userService.signup(request, response);
+  }
+  
+  @GetMapping("/leave.do")
+  public void leave(HttpServletRequest request, HttpServletResponse response) {
+    userService.leave(request, response);
+  }
+  /*
+  @GetMapping("/leave.do")
+  public void leave(HttpSession session, HttpServletResponse response) {
+    UserDto user = (UserDto) session.getAttribute("user");
+  }
+  @GetMapping("/leave.do")
+  public void leave(@SessionAttribute(name="user") UserDto user, HttpServletResponse response) {   
+  }
+  */
+  
+  @GetMapping("/signout.do")
+  public void signout(HttpServletRequest request, HttpServletResponse response) {
+    userService.signout(request, response);
+  }
+  
+  
+  
+  
+  
+  
 }

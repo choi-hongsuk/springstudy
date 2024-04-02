@@ -66,7 +66,7 @@ public class MySecurityUtils {
       }
     }
     SecureRandom secureRandom = new SecureRandom();
-    if(!letter || !number) {
+    if(letter || number) {
     while(count > 0) {
       builder.append(list.get(secureRandom.nextInt(list.size())));
       count--;
