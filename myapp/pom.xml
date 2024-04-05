@@ -21,14 +21,13 @@
   <dependencies>
   
   
+  
   <!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
     <dependency>
       <groupId>com.sun.mail</groupId>
       <artifactId>javax.mail</artifactId>
       <version>1.6.2</version>
     </dependency>
-  
- 
   
   
     <!-- Java JSON Library -->
@@ -38,6 +37,15 @@
       <artifactId>jackson-databind</artifactId>
       <version>2.16.1</version>
     </dependency>
+
+    <!-- JSON in Java -->
+    <!-- https://mvnrepository.com/artifact/org.json/json -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+    </dependency>
+
 
 
     

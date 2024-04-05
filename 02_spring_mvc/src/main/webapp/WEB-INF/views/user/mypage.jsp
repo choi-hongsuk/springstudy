@@ -7,7 +7,9 @@
 <title>Insert title here</title>
 </head>
 <body>
-    <div>${user.userNo}</div>
-    <div>${user.userEmail}</div>
+
+  <div>${user.userNo}</div>
+  <div>${user.userEmail}</div>
+
 </body>
 </html>
